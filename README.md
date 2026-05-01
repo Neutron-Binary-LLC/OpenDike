@@ -97,10 +97,45 @@ docker-compose up training
 
 ## Real World Use Cases
 
-- **Dynamic Parental Controls**: A "Teenager" demographic layer that emphasizes autonomy while a "Family" community layer maintains safety boundaries, evolving as the child grows.
-- **Global Enterprise Compliance**: Regional layers ensure legal and cultural compliance (e.g., GDPR in EU, specific local customs in Asia) without needing separate model deployments.
-- **Personalized Ethical AI**: Users can "train" their own local personal layer to reflect their specific values (e.g., veganism, specific religious views) which modulate the LLM's tone and framing.
-- **Conflict Resolution Platforms**: Using the Conflict Detection feature to highlight where cultural norms differ from individual preferences, facilitating transparent dialogue.
+OpenDike's hierarchical architecture enables nuanced AI alignment across diverse domains:
+
+### 1. Dynamic Parental & Educational Controls
+*   **The Scenario**: An AI tutor or companion for a child that matures alongside them.
+*   **Layer Interaction**:
+    *   **Demographic Layer**: Set to "Child" (ages 5-10), emphasizing high *Care* and *Authority* (safety/guidance).
+    *   **Community Layer**: Reflects school or family values (e.g., focus on *Fairness* and *Curiosity*).
+    *   **Personal Layer**: Learns the child's specific struggles and interests.
+*   **Evolution**: As the child enters the "Teenager" demographic, the system automatically shifts weights—reducing *Authority* dominance in favor of *Liberty* and *Care*, encouraging critical thinking while maintaining core safety floors.
+
+### 2. Global Enterprise & Regional Compliance
+*   **The Scenario**: A multinational corporation deploying a single AI helpdesk across 50 countries.
+*   **Layer Interaction**:
+    *   **Country Layer**: Encodes local legal requirements (e.g., GDPR in the EU, specific labor laws in France, or cultural speech norms in Japan).
+    *   **Community Layer**: Standardizes corporate "Code of Ethics" across all branches.
+    *   **Personal Layer**: Adapts to the specific department (Legal vs. Creative) to adjust technical vs. empathetic tone.
+*   **Benefit**: Eliminates the need for 50 different fine-tuned models; one model is steered dynamically by the local Country layer.
+
+### 3. Healthcare & Cultural Competency
+*   **The Scenario**: An AI medical assistant providing health advice to diverse populations.
+*   **Layer Interaction**:
+    *   **Country Layer**: National health guidelines and bioethics standards.
+    *   **Community Layer**: Respects cultural or religious views on specific medical practices (e.g., dietary restrictions, end-of-life care preferences).
+    *   **Personal Layer**: Learns the individual patient's history of medical mistrust or specific health goals.
+*   **Benefit**: Ensures medical advice is not only scientifically accurate but culturally resonant, increasing patient adherence and trust.
+
+### 4. Conflict Resolution & Mediation
+*   **The Scenario**: An AI-facilitated platform for resolving disputes between parties with different values.
+*   **Layer Interaction**:
+    *   **Conflict Detection**: The Deducer explicitly flags when a proposed solution violates a Country-level *Authority* norm for one party but matches a Personal-level *Fairness* preference for another.
+    *   **Transparency**: The system generates a "Moral Map" showing where the parties align and where their hierarchical layers diverge.
+*   **Benefit**: Provides a neutral, transparent framework for understanding the *root* of value-based conflicts rather than just the surface-level disagreement.
+
+### 5. Personalized Ethical AI (The "Digital Twin")
+*   **The Scenario**: A personal AI agent that reflects the user's specific moral philosophy (e.g., Utilitarianism, Stoicism, or specific religious tenets).
+*   **Layer Interaction**:
+    *   **Personal Layer**: The user provides explicit feedback ("In this dilemma, I value Loyalty over Fairness"). The **Continual Learner** updates the Personal Layer embeddings.
+    *   **Trace Retrieval**: When the user asks a sensitive question, the "Palace Walk" retrieves past interactions where the user expressed these specific values.
+*   **Benefit**: The AI becomes a true extension of the user's agency, providing advice and drafting content that is "authentically them."
 
 ## Suggested Features & Roadmap
 
