@@ -71,7 +71,7 @@ learning:
 
 wrapper:
   local_testing:
-    use_gemma: false
+    use_gemma: true
     model_id: "google/gemma-2b"
     hf_token: "your_huggingface_token_here"
   safety_floor:

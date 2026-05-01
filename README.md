@@ -133,8 +133,13 @@ sequenceDiagram
    ```
 2. Run the core example:
    ```bash
-   export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+   export PYTHONPATH=$PYTHONPATH:$(pwd)
    python src/opendike/core.py
+   ```
+3. Run the interactive test:
+   ```bash
+   export PYTHONPATH=$PYTHONPATH:$(pwd)
+   python src/opendike/interactive_run.py
    ```
 
 ### Local Testing with Gemma
