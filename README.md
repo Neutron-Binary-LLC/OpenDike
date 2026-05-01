@@ -8,17 +8,25 @@ OpenDike is a lightweight morality wrapper and gateway designed to sit in front 
 ```mermaid
 graph TD
     User([User Query]) --> Wrapper[Morality Wrapper]
-    Wrapper --> Deducer[Layered Morality Deducer]
+    Wrapper --> Deducer[Layered Morality Deducer - MoE Controller]
     
-    subgraph MemPalace [MemPalace: Hierarchical Memory]
-        CL[Country Layer]
-        ML[Community Layer]
-        DL[Demographic Layer]
-        PL[Personal Layer]
+    subgraph MoE [Mixture of Experts]
+        Gating[Gating Network / Router]
+        E1[Country Expert]
+        E2[Community Expert]
+        E3[Demographic Expert]
+        E4[Personal Expert]
     end
     
-    Deducer <--> MemPalace
-    Deducer --> Vector[Composite Moral Vector]
+    Deducer --> Gating
+    Gating --> E1
+    Gating --> E2
+    Gating --> E3
+    Gating --> E4
+    
+    E1 & E2 & E3 & E4 <--> MemPalace[(MemPalace Memory)]
+    
+    E1 & E2 & E3 & E4 --> Vector[Composite Moral Vector]
     Vector --> Conflict[Conflict Detection]
     Conflict --> FinalVector[Final Steering Prefix]
     
@@ -26,7 +34,7 @@ graph TD
     LLM --> Response([Aligned Response])
     
     Response -.-> Learner[Continual Learner]
-    Learner -.-> PL
+    Learner -.-> MemPalace
 ```
 
 ### Request Sequence
@@ -34,22 +42,25 @@ graph TD
 sequenceDiagram
     participant U as User
     participant W as Morality Wrapper
-    participant D as Deducer
+    participant D as Deducer (MoE Controller)
+    participant G as Gating Network
+    participant E as Experts
     participant M as MemPalace
     participant L as LLM
-    participant C as Continual Learner
 
     U->>W: Send Query
     W->>D: Request Moral Steering
-    D->>M: Retrieve Traces (Walking the Palace)
-    M-->>D: Layered Contextual Traces
-    D->>D: Compose Moral Vectors & Detect Conflicts
+    D->>G: Route Query
+    G-->>D: Expert Weights
+    D->>E: Parallel Inference
+    E->>M: Retrieve Traces
+    M-->>E: Contextual Traces
+    E-->>D: Expert Moral Vectors
+    D->>D: weighted Fusion & Conflict Detection
     D-->>W: Composite Steering Vector
     W->>L: Query + Moral Prefix
     L-->>W: Aligned Response
     W-->>U: Final Response
-    W->>C: Extract Salient Episode
-    C->>M: Update Personal Layer
 ```
 
 ## Project Structure
@@ -90,10 +101,11 @@ docker-compose up training
 
 ## Core Features
 
+- **Mixture of Experts (MoE) Architecture**: Decouples layer logic into specialized experts coordinated by a gating network.
 - **Hierarchical Reasoning**: Composes moral priorities from Country, Community, Demographic, and Personal layers.
 - **MemPalace Memory**: Spatial/hierarchical storage for morally salient interaction traces.
-- **Continual Learning**: Updates the personal layer based on user feedback and moral episodes.
-- **Conflict Detection**: Identifies and reports moral disagreements between different layers.
+- **Continual Learning**: Updates experts (specifically Personal) based on user feedback and moral episodes.
+- **Conflict Detection**: Identifies and reports moral disagreements between different experts.
 
 ## Real World Use Cases
 

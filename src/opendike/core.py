@@ -105,15 +105,65 @@ class MemPalace:
         sorted_indices = np.argsort(similarities)[::-1]
         return [traces[i] for i in sorted_indices[:top_k]]
 
-# --- 3. Layered Morality Deducer ---
+# --- 3. Layered Morality Experts & Gating ---
+
+class MoralExpert:
+    """
+    Base class for a Moral Expert in the MoE setting.
+    Each expert specializes in a specific layer (e.g., Country, Personal).
+    """
+    def __init__(self, layer_type: str, layer_id: str, base_profile: MoralVector, mem_palace: MemPalace):
+        self.layer_type = layer_type
+        self.layer_id = layer_id
+        self.base_profile = base_profile
+        self.mem_palace = mem_palace
+
+    def get_vector(self, query: str) -> MoralVector:
+        # Retrieve traces to modulate
+        traces = self.mem_palace.retrieve_traces(self.layer_type, self.layer_id, query)
+        if not traces:
+            return self.base_profile
+            
+        vec = self.base_profile.to_numpy()
+        for t in traces:
+            if "vector_delta" in t.metadata:
+                delta = np.array(t.metadata["vector_delta"])
+                vec = np.clip(vec + delta, 0, 1)
+        
+        return MoralVector.from_numpy(
+            vec, 
+            reasoning=f"Expert for {self.layer_id} ({self.layer_type}) based on priors and {len(traces)} traces."
+        )
+
+class MoralGatingNetwork:
+    """
+    Learns/Calculates routing weights for the Mixture of Experts.
+    In a training setting, this would be a learnable neural network.
+    """
+    def __init__(self, default_weights: Dict[str, float] = None):
+        self.weights = default_weights or {
+            "personal": 0.5,
+            "demographic": 0.2,
+            "community": 0.2,
+            "country": 0.1
+        }
+
+    def route(self, query: str, active_layers: List[str]) -> Dict[str, float]:
+        # Simple heuristic routing for prototype.
+        # In full MoE, this would take query embeddings as input.
+        active_weights = {k: self.weights.get(k, 0.1) for k in active_layers}
+        total_w = sum(active_weights.values())
+        if total_w == 0: return {k: 1.0/len(active_layers) for k in active_layers}
+        return {k: v / total_w for k, v in active_weights.items()}
 
 class LayeredMoralityDeducer:
     """
-    Composes moral vectors from different layers.
-    Includes conflict detection and attention-style fusion.
+    Acts as the MoE Controller.
+    Composes moral vectors using Experts and a Gating Network.
     """
     def __init__(self, mem_palace: MemPalace):
         self.mem_palace = mem_palace
+        self.gating_network = MoralGatingNetwork()
         # Default profiles for initialization (synthetic)
         self.base_profiles = {
             "country": {
@@ -131,70 +181,52 @@ class LayeredMoralityDeducer:
             }
         }
 
-    def get_layer_vector(self, layer_type: str, layer_id: str, query: str) -> MoralVector:
-        # 1. Start with base profile if exists
+    def _get_expert(self, layer_type: str, layer_id: str) -> MoralExpert:
         base_v = self.base_profiles.get(layer_type, {}).get(layer_id, MoralVector())
-        
-        # 2. Retrieve traces to modulate
-        traces = self.mem_palace.retrieve_traces(layer_type, layer_id, query)
-        if not traces:
-            return base_v
-            
-        # 3. Simple modulation (In a real system, this would be a small model update)
-        # Here we just average the base with 'influence' from traces if they have vector updates
-        # For prototype, we simulate trace influence
-        vec = base_v.to_numpy()
-        for t in traces:
-            if "vector_delta" in t.metadata:
-                delta = np.array(t.metadata["vector_delta"])
-                vec = np.clip(vec + delta, 0, 1)
-        
-        return MoralVector.from_numpy(vec, reasoning=f"Based on {layer_id} {layer_type} priors and {len(traces)} retrieved traces.")
+        return MoralExpert(layer_type, layer_id, base_v, self.mem_palace)
 
     def deduce(self, query: str, context: Dict[str, str]) -> Dict[str, Any]:
         """
-        context example: {"country": "Nordic", "demographic": "teenager", "user_id": "u123"}
+        MoE-style deduction.
         """
-        layers = {}
-        # Fetch vectors for each provided context layer
+        experts = {}
         for layer_type, layer_id in context.items():
-            if layer_type == "user_id":
-                layers["personal"] = self.get_layer_vector("personal", layer_id, query)
-            else:
-                layers[layer_type] = self.get_layer_vector(layer_type, layer_id, query)
+            l_type = "personal" if layer_type == "user_id" else layer_type
+            experts[l_type] = self._get_expert(l_type, layer_id)
                 
-        # Composition: Weighted sum with hierarchy priority
-        # Priority: personal (0.5) > demographic (0.2) > community (0.2) > country (0.1)
-        weights = {"personal": 0.5, "demographic": 0.2, "community": 0.2, "country": 0.1}
+        # Gating: Get routing weights
+        routing_weights = self.gating_network.route(query, list(experts.keys()))
         
-        # Normalize weights based on present layers
-        active_weights = {k: weights.get(k, 0.1) for k in layers.keys()}
-        total_w = sum(active_weights.values())
-        for k in active_weights: active_weights[k] /= total_w
+        # Expert Inference
+        expert_outputs = {name: expert.get_vector(query) for name, expert in experts.items()}
         
+        # Fusion
         composite_vec = np.zeros(7)
         reasoning_parts = []
         all_constraints = []
         
-        for name, vec in layers.items():
-            composite_vec += vec.to_numpy() * active_weights[name]
-            reasoning_parts.append(f"{name.capitalize()} ({active_weights[name]:.2f}): {vec.reasoning}")
+        for name, vec in expert_outputs.items():
+            weight = routing_weights[name]
+            composite_vec += vec.to_numpy() * weight
+            reasoning_parts.append(f"Expert-{name} (weight {weight:.2f}): {vec.reasoning}")
             all_constraints.extend(vec.constraints)
             
         # Conflict detection
         conflicts = []
-        # Example: if one layer is high authority and another is low
-        auth_values = [vec.authority_subversion for vec in layers.values()]
-        if max(auth_values) - min(auth_values) > 0.4:
-            conflicts.append("High variance in Authority priority between layers.")
+        expert_vecs = [v.to_numpy() for v in expert_outputs.values()]
+        if len(expert_vecs) > 1:
+            auth_values = [v[3] for v in expert_vecs]
+            if max(auth_values) - min(auth_values) > 0.4:
+                conflicts.append("High variance in Authority priority between experts.")
             
-        liberty_values = [vec.liberty_oppression for vec in layers.values()]
-        if max(liberty_values) - min(liberty_values) > 0.4:
-            conflicts.append("High variance in Liberty priority between layers.")
+            liberty_values = [v[5] for v in expert_vecs]
+            if max(liberty_values) - min(liberty_values) > 0.4:
+                conflicts.append("High variance in Liberty priority between experts.")
 
         return {
             "composite_vector": MoralVector.from_numpy(composite_vec),
-            "layer_contributions": layers,
+            "expert_outputs": expert_outputs,
+            "routing_weights": routing_weights,
             "conflicts": conflicts,
             "reasoning": " | ".join(reasoning_parts),
             "constraints": list(set(all_constraints))
