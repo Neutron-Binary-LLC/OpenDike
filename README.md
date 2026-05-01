@@ -37,6 +37,32 @@ graph TD
     Learner -.-> MemPalace
 ```
 
+### Config-Context Association
+```mermaid
+graph LR
+    subgraph Config [config.yaml]
+        C1[memory]
+        C2[experts]
+        C3[deducer]
+        C4[learning]
+        C5[wrapper]
+    end
+
+    subgraph Modules [Context Modules]
+        M1[MemPalace]
+        M2[MoralGatingNetwork]
+        M3[LayeredMoralityDeducer]
+        M4[ContinualLearner]
+        M5[MoralityWrapper]
+    end
+
+    C1 --> M1
+    C2 --> M2
+    C3 --> M3
+    C4 --> M4
+    C5 --> M5
+```
+
 ### Request Sequence
 ```mermaid
 sequenceDiagram
@@ -66,8 +92,14 @@ sequenceDiagram
 ## Project Structure
 
 - `src/opendike/`: Core logic and models.
-    - `core.py`: Implementation of `MoralVector`, `MemPalace`, and `LayeredMoralityDeducer`.
-    - `train.py`: Training stubs for future improvements (Transformer-based deduction).
+    - `models.py`: Pydantic models for `MoralVector` and `MoralTrace`.
+    - `memory.py`: `MemPalace` hierarchical memory implementation.
+    - `experts.py`: MoE Experts and Gating Network.
+    - `deducer.py`: `LayeredMoralityDeducer` controller.
+    - `wrapper.py`: `MoralityWrapper` gateway.
+    - `learning.py`: `ContinualLearner` loop.
+    - `core.py`: Example entry point.
+    - `train.py`: Training stubs for future improvements.
 - `data/`: Local storage for `MemPalace` traces and profiles.
 - `tests/`: Unit and integration tests.
 - `requirements.txt`: Python dependencies.

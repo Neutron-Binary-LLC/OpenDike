@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from typing import List, Dict
-from src.opendike.core import MoralVector, MoralExpert
+from src.opendike import MoralVector, MoralExpert
 
 class GatingNetwork(nn.Module):
     """

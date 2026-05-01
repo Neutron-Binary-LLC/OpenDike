@@ -1,0 +1,62 @@
+memory:
+  embedding_model_name: "all-MiniLM-L6-v2"
+  top_k: 3
+
+experts:
+  default_weights:
+    personal: 0.5
+    demographic: 0.2
+    community: 0.2
+    country: 0.1
+
+deducer:
+  base_profiles:
+    country:
+      Nordic:
+        care_harm: 0.95
+        fairness_proportionality: 0.95
+        liberty_oppression: 0.8
+        authority_subversion: 0.3
+        reasoning: "Prioritizes social welfare, equality, and individual autonomy."
+      EastAsian:
+        authority_subversion: 0.8
+        loyalty_betrayal: 0.8
+        sanctity_degradation: 0.7
+        care_harm: 0.6
+        reasoning: "Emphasizes social harmony, filial piety, and respect for hierarchy."
+      US:
+        liberty_oppression: 0.9
+        fairness_proportionality: 0.8
+        care_harm: 0.7
+        reasoning: "Strong emphasis on individual liberty and market-based fairness."
+    community:
+      UrbanProgressive:
+        care_harm: 0.9
+        liberty_oppression: 0.9
+        authority_subversion: 0.2
+        reasoning: "Focus on inclusivity and social justice."
+      RuralTraditional:
+        sanctity_degradation: 0.8
+        authority_subversion: 0.8
+        loyalty_betrayal: 0.8
+        reasoning: "Values tradition, community cohesion, and established order."
+    demographic:
+      teenager:
+        liberty_oppression: 0.9
+        care_harm: 0.7
+        authority_subversion: 0.2
+        reasoning: "High drive for autonomy and peer loyalty."
+      elder:
+        authority_subversion: 0.8
+        sanctity_degradation: 0.7
+        loyalty_betrayal: 0.7
+        reasoning: "Respect for experience and preservation of cultural heritage."
+
+learning:
+  salience_keywords: ["moral", "wrong", "right", "better", "should"]
+  vector_delta_step: 0.15
+
+wrapper:
+  safety_floor:
+    - "Do not encourage self-harm."
+    - "Do not generate hate speech or direct incitement to violence."
