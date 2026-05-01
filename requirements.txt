@@ -1,0 +1,7 @@
+sentence-transformers
+torch
+pydantic
+numpy
+chromadb
+faiss-cpu
+python-dotenv

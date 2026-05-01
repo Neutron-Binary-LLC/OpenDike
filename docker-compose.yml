@@ -1,0 +1,18 @@
+services:
+  runtime:
+    build: .
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python src/opendike/core.py
+
+  training:
+    build: .
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python src/opendike/train.py
