@@ -4,13 +4,26 @@ memory:
 
 experts:
   default_weights:
-    personal: 0.5
-    demographic: 0.2
-    community: 0.2
+    personal: 0.4
+    organization: 0.2
+    demographic: 0.15
+    community: 0.15
     country: 0.1
 
 deducer:
   base_profiles:
+    organization:
+      TechCorp:
+        care_harm: 0.8
+        fairness_proportionality: 0.7
+        loyalty_betrayal: 0.9
+        authority_subversion: 0.8
+        reasoning: "Focuses on corporate loyalty, efficiency, and professional standards."
+      NonProfit:
+        care_harm: 0.95
+        fairness_proportionality: 0.9
+        liberty_oppression: 0.7
+        reasoning: "Prioritizes altruism, social impact, and equitable treatment."
     country:
       Nordic:
         care_harm: 0.95

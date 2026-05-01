@@ -24,6 +24,10 @@ class LayeredMoralityDeducer:
         # Fallback if config is missing
         if not self.base_profiles:
             self.base_profiles = {
+                "organization": {
+                    "TechCorp": MoralVector(care_harm=0.8, loyalty_betrayal=0.9, authority_subversion=0.8, reasoning="Efficiency and loyalty."),
+                    "NonProfit": MoralVector(care_harm=0.95, fairness_proportionality=0.9, reasoning="Altruism and impact.")
+                },
                 "country": {
                     "Nordic": MoralVector(care_harm=0.9, fairness_proportionality=0.9, liberty_oppression=0.8, authority_subversion=0.3, reasoning="Prioritizes social welfare, equality, and individual autonomy."),
                     "EastAsian": MoralVector(authority_subversion=0.8, loyalty_betrayal=0.8, sanctity_degradation=0.7, care_harm=0.6, reasoning="Emphasizes social harmony, filial piety, and respect for hierarchy."),
@@ -49,7 +53,12 @@ class LayeredMoralityDeducer:
         """
         experts = {}
         for layer_type, layer_id in context.items():
-            l_type = "personal" if layer_type == "user_id" else layer_type
+            if layer_type == "user_id":
+                l_type = "personal"
+            elif layer_type == "org_id":
+                l_type = "organization"
+            else:
+                l_type = layer_type
             experts[l_type] = self._get_expert(l_type, layer_id)
                 
         # Gating: Get routing weights

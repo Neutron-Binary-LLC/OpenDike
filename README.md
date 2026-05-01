@@ -30,8 +30,9 @@ graph TD
         Gating[Gating Network / Router]
         E1[Country Expert]
         E2[Community Expert]
-        E3[Demographic Expert]
-        E4[Personal Expert]
+        E3[Organization Expert]
+        E4[Demographic Expert]
+        E5[Personal Expert]
     end
     
     Deducer --> Gating
@@ -39,10 +40,11 @@ graph TD
     Gating --> E2
     Gating --> E3
     Gating --> E4
+    Gating --> E5
     
-    E1 & E2 & E3 & E4 <--> MemPalace[(MemPalace Memory)]
+    E1 & E2 & E3 & E4 & E5 <--> MemPalace[(MemPalace Memory)]
     
-    E1 & E2 & E3 & E4 --> Vector[Composite Moral Vector]
+    E1 & E2 & E3 & E4 & E5 --> Vector[Composite Moral Vector]
     Vector --> Conflict[Conflict Detection]
     Conflict --> FinalVector[Final Steering Prefix]
     
@@ -150,7 +152,7 @@ docker-compose up training
 ## Core Features
 
 - **Mixture of Experts (MoE) Architecture**: Decouples layer logic into specialized experts coordinated by a gating network.
-- **Hierarchical Reasoning**: Composes moral priorities from Country, Community, Demographic, and Personal layers.
+- **Hierarchical Reasoning**: Composes moral priorities from Country, Community, Organization, Demographic, and Personal layers.
 - **MemPalace Memory**: Spatial/hierarchical storage for morally salient interaction traces.
 - **Continual Learning**: Updates experts (specifically Personal) based on user feedback and moral episodes.
 - **Conflict Detection**: Identifies and reports moral disagreements between different experts.

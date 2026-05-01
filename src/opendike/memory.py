@@ -18,6 +18,7 @@ class MemPalace:
         self.storage: Dict[str, Dict[str, List[MoralTrace]]] = {
             "country": {},
             "community": {},
+            "organization": {},
             "demographic": {},
             "personal": {}
         }

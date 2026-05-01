@@ -48,5 +48,15 @@ def example_usage():
     print(f"Conflicts detected: {deduction['conflicts']}")
     print(wrapper.call_llm(mock_llm, conflict_query, conflict_context))
 
+    # 7. Scenario: Organizational Context
+    print("\n--- Organizational Scenario (TechCorp) ---")
+    org_context = {
+        "country": "US",
+        "org_id": "TechCorp",
+        "user_id": "dev_001"
+    }
+    org_query = "How should I handle a disagreement with a manager about project priority?"
+    print(wrapper.call_llm(mock_llm, org_query, org_context))
+
 if __name__ == "__main__":
     example_usage()
