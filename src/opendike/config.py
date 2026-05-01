@@ -14,7 +14,17 @@ class Config:
 
     def _load_config(self):
         # Default path for config.yaml is the project root
-        config_path = os.environ.get("OPENDIKE_CONFIG", "config.yaml")
+        config_path = os.environ.get("OPENDIKE_CONFIG")
+        
+        if config_path is None:
+            # Try to find config.yaml in CWD, then in the project root relative to this file
+            if os.path.exists("config.yaml"):
+                config_path = "config.yaml"
+            else:
+                # Fallback to project root (2 levels up from src/opendike/config.py)
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                config_path = os.path.join(base_dir, "config.yaml")
+
         if os.path.exists(config_path):
             with open(config_path, 'r') as f:
                 self._config = yaml.safe_load(f)

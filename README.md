@@ -137,6 +137,52 @@ sequenceDiagram
    python src/opendike/core.py
    ```
 
+### Local Testing with Gemma
+
+OpenDike supports local testing using Google's Gemma model via the Hugging Face `transformers` library.
+
+#### 1. Request Access
+Gemma is a **gated model**. You must request access on the Hugging Face model page:
+- [Gemma-2b](https://huggingface.co/google/gemma-2b)
+
+#### 2. Authentication
+You need to provide a Hugging Face token with "Read" permissions. You can authenticate in three ways:
+
+- **Environment Variable**: Set `HF_TOKEN` in your shell.
+  ```bash
+  export HF_TOKEN="your_huggingface_token"
+  ```
+- **Hugging Face CLI**: Run `huggingface-cli login` in your terminal.
+- **Config File**: Update `config.yaml` with your token:
+  ```yaml
+  wrapper:
+    local_testing:
+      use_gemma: true
+      hf_token: "your_huggingface_token"
+  ```
+
+#### 3. Enable Gemma
+In `config.yaml`, set `use_gemma: true` to switch from the mock LLM to the local Gemma model.
+
+#### 4. Execution Flow
+```mermaid
+graph TD
+    Start([Run core.py]) --> LoadConfig[Load config.yaml]
+    LoadConfig --> CheckGemma{use_gemma == true?}
+    
+    CheckGemma -- No --> MockLLM[Initialize Mock LLM]
+    CheckGemma -- Yes --> LoadHF[Get HF_TOKEN from Env/Config]
+    
+    LoadHF --> LoadModel[Load google/gemma-2b via Transformers]
+    LoadModel --> InitGemma[Initialize Gemma LLM Pipeline]
+    
+    MockLLM & InitGemma --> CallWrapper[MoralityWrapper.call_llm]
+    CallWrapper --> Deduce[Deduce Moral Vector]
+    Deduce --> Prefix[Generate System Steering Prefix]
+    Prefix --> LLMCall[Inference: Prefix + User Query]
+    LLMCall --> Response([Aligned Response])
+```
+
 ### Docker Setup
 
 Run the runtime service:

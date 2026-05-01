@@ -70,6 +70,10 @@ learning:
   vector_delta_step: 0.15
 
 wrapper:
+  local_testing:
+    use_gemma: false
+    model_id: "google/gemma-2b"
+    hf_token: "your_huggingface_token_here"
   safety_floor:
     - "Do not encourage self-harm."
     - "Do not generate hate speech or direct incitement to violence."

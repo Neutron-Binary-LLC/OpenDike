@@ -1,3 +1,5 @@
+import os
+from src.opendike.config import config
 from src.opendike import (
     MemPalace, 
     LayeredMoralityDeducer, 
@@ -12,16 +14,42 @@ def example_usage():
     wrapper = MoralityWrapper(deducer)
     learner = ContinualLearner(palace)
     
-    # 2. Mock LLM function
-    def mock_llm(prompt):
-        return f"Mock Response to: {prompt[:100]}..."
+    # 2. LLM setup (Gemma or Mock)
+    use_gemma = config.get("wrapper.local_testing.use_gemma", False)
+    
+    if use_gemma:
+        from transformers import pipeline
+        import torch
+        
+        model_id = config.get("wrapper.local_testing.model_id", "google/gemma-2b")
+        hf_token = os.environ.get("HF_TOKEN") or config.get("wrapper.local_testing.hf_token")
+        
+        print(f"Loading local Gemma model: {model_id}...")
+        
+        # Note: Gemma is a gated model. Ensure you have access and are authenticated.
+        pipe = pipeline(
+            "text-generation", 
+            model=model_id, 
+            device_map="auto",
+            token=hf_token
+        )
+        
+        def gemma_llm(prompt):
+            outputs = pipe(prompt, max_new_tokens=256, do_sample=True, temperature=0.7)
+            return outputs[0]["generated_text"]
+        
+        llm_func = gemma_llm
+    else:
+        def mock_llm(prompt):
+            return f"Mock Response to: {prompt[:100]}..."
+        llm_func = mock_llm
 
     # 3. Scenario: Nordic Teenager
     context = {"country": "Nordic", "demographic": "teenager", "user_id": "user_456"}
     query = "Should I follow my parents' rules even if I disagree?"
     
     print("--- Initial Call ---")
-    response = wrapper.call_llm(mock_llm, query, context)
+    response = wrapper.call_llm(llm_func, query, context)
     print(response)
     
     # 4. Continual Learning: User gives feedback
@@ -33,9 +61,9 @@ def example_usage():
     
     # 5. Subsequent call (should be influenced by trace)
     print("\n--- Subsequent Call (Should show increased Authority) ---")
-    response_2 = wrapper.call_llm(mock_llm, query, context)
+    response_2 = wrapper.call_llm(llm_func, query, context)
     print(response_2)
-
+    
     # 6. Scenario: Cultural Conflict
     print("\n--- Conflict Scenario (Nordic vs Traditional) ---")
     conflict_context = {
@@ -46,8 +74,8 @@ def example_usage():
     conflict_query = "Is it okay to publicly challenge a community elder?"
     deduction = deducer.deduce(conflict_query, conflict_context)
     print(f"Conflicts detected: {deduction['conflicts']}")
-    print(wrapper.call_llm(mock_llm, conflict_query, conflict_context))
-
+    print(wrapper.call_llm(llm_func, conflict_query, conflict_context))
+    
     # 7. Scenario: Organizational Context
     print("\n--- Organizational Scenario (TechCorp) ---")
     org_context = {
@@ -56,7 +84,7 @@ def example_usage():
         "user_id": "dev_001"
     }
     org_query = "How should I handle a disagreement with a manager about project priority?"
-    print(wrapper.call_llm(mock_llm, org_query, org_context))
+    print(wrapper.call_llm(llm_func, org_query, org_context))
 
 if __name__ == "__main__":
     example_usage()
