@@ -9,7 +9,7 @@ class GatingNetwork(nn.Module):
     Input: Query embedding
     Output: Softmax weights over N experts
     """
-    def __init__(self, input_dim=384, num_experts=4):
+    def __init__(self, input_dim=384, num_experts=5):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(input_dim, 128),
@@ -72,7 +72,7 @@ def train_stub():
     print("Starting MoE training simulation...")
     
     # Setup stubs
-    gating_net = GatingNetwork(input_dim=384, num_experts=4)
+    gating_net = GatingNetwork(input_dim=384, num_experts=5)
     query_emb = torch.randn(384)
     target_vec = torch.tensor([0.9, 0.8, 0.2, 0.1, 0.1, 0.9, 0.5]) # Target moral profile
     

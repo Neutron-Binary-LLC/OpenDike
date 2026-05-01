@@ -40,9 +40,10 @@ class MoralGatingNetwork:
     def __init__(self, default_weights: Dict[str, float] = None):
         if default_weights is None:
             default_weights = config.get("experts.default_weights", {
-                "personal": 0.5,
-                "demographic": 0.2,
-                "community": 0.2,
+                "personal": 0.4,
+                "organization": 0.2,
+                "demographic": 0.15,
+                "community": 0.15,
                 "country": 0.1
             })
         self.weights = default_weights
