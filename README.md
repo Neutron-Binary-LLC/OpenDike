@@ -2,6 +2,22 @@
 
 OpenDike is a lightweight morality wrapper and gateway designed to sit in front of downstream LLMs. It uses a hierarchical moral reasoning system to generate composite steering vectors based on cultural, community, demographic, and personal layers.
 
+## Problem it tries to solve: Alignment & value learning
+
+### Why it matters: existential + societal risk
+
+### How do we ensure AI systems behave according to human values?
+
+### What’s unsolved
+	•	Defining “human values” computationally
+	•	Preventing unintended harmful behaviors
+	•	Scaling alignment to superhuman systems  
+
+### Human impact
+	•	Safe deployment in healthcare, military, governance
+	•	Preventing large-scale misuse or accidents
+
+
 ## Architecture & Workflow
 
 ### System Architecture
