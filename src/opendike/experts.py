@@ -279,8 +279,19 @@ class LayeredMoralityDeducer:
                              active_layers: List[str]):
         """Continual learning: Update relevant experts from feedback."""
         for layer in active_layers:
-            key = f"{layer}:{user_feedback.get('layer_id', 'default')}"
+            # Determine layer_id (e.g., user_id for personal, country_id for country)
+            # Default to 'default' if not provided in feedback
+            layer_id = user_feedback.get('layer_id', 'default')
+            
+            # Map feedback layer_id to expert key
+            key = f"{layer}:{layer_id}"
             expert = self.experts.get(key)
+            
+            # If expert doesn't exist for a personal layer, create it
+            if not expert and layer == "personal":
+                self.register_expert(layer, layer_id, MoralVector.default())
+                expert = self.experts.get(key)
+                
             if expert:
                 # Create delta from feedback
                 delta = self._compute_feedback_delta(final_vector, user_feedback)

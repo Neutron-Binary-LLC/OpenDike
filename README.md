@@ -114,7 +114,20 @@ sequenceDiagram
     - `learning.py`: `ContinualLearner` loop.
     - `core.py`: Example entry point.
     - `interactive_run.py`: Interactive CLI for testing and feedback.
-    - `train.py`: Training stubs for future improvements.
+    - `train.py`: `ContinuousTrainer` and training logic for experts and gating.
+
+## Training Flow
+
+OpenDike supports a continuous training flow to keep moral experts aligned with evolving values:
+
+1. **Trace Segregation**: The `ContinuousTrainer` scans `MemPalace` and groups moral traces by their expert (e.g., specific user, country, or organization).
+2. **Expert Initialization/Recalibration**: Experts can be initialized or updated by computing the "moral centroid" of their assigned traces. This updates the `base_profile` of the expert.
+3. **Gating Alignment**: The `GatingNetwork` (a small neural net) can be trained to route queries to the most relevant experts based on query embeddings and target routing distributions.
+
+To run the training simulation:
+```bash
+python src/opendike/train.py
+```
 - `data/`: Local storage for `MemPalace` traces and profiles.
 - `tests/`: Unit and integration tests.
 - `requirements.txt`: Python dependencies.
