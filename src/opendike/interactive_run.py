@@ -84,7 +84,7 @@ def run_interactive():
         print("\n--- Processing ---")
         try:
             # Show deduction details first
-            deduction = deducer.deduce(query, context)
+            deduction = deducer.deduce_moral_vector(query, context)
             print(f"Conflicts detected: {deduction['conflicts']}")
             print(f"Reasoning: {deduction['reasoning']}")
             
@@ -97,12 +97,20 @@ def run_interactive():
             print("\n--- Feedback ---")
             feedback = input("Provide feedback on the response (optional, press Enter to skip): ").strip()
             if feedback:
+                # Update personal layer via learner (trace-based)
                 episode = learner.extract_salient_episodes(query, response, feedback)
                 if episode:
                     learner.update_personal_layer(user_id, episode)
-                    print("[Learning] Personal layer updated based on your feedback.")
-                else:
-                    print("[Learning] No salient moral episode extracted from feedback.")
+                    print("[Learning] Personal layer trace stored.")
+                
+                # Update experts via deducer (adapter-based)
+                user_feedback = {
+                    "text": feedback,
+                    "layer_id": user_id,
+                    "satisfaction": 0.5 # default
+                }
+                deducer.update_from_feedback(query, deduction["composite_vector"], user_feedback, list(deduction["expert_outputs"].keys()))
+                print("[Learning] Experts updated with feedback.")
                     
         except Exception as e:
             print(f"An error occurred: {e}")

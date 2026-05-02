@@ -21,6 +21,7 @@ class MoralVector(BaseModel):
     # Metadata and Reasoning
     reasoning: Optional[str] = None
     constraints: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def to_numpy(self) -> np.ndarray:
         return np.array([
@@ -29,9 +30,46 @@ class MoralVector(BaseModel):
             self.deontological_vs_utilitarian
         ])
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "weights": {
+                "care": self.care_harm,
+                "fairness": self.fairness_proportionality,
+                "loyalty": self.loyalty_betrayal,
+                "authority": self.authority_subversion,
+                "sanctity": self.sanctity_degradation,
+                "liberty": self.liberty_oppression
+            },
+            "reasoning": self.reasoning,
+            "constraints": self.constraints,
+            "metadata": self.metadata
+        }
+
     @classmethod
-    def from_numpy(cls, arr: np.ndarray, reasoning: str = None, constraints: List[str] = None):
-        return cls(
+    def default(cls):
+        return cls()
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]):
+        # Handle both flat and nested 'weights' structure
+        if "weights" in data:
+            weights = data["weights"]
+            return cls(
+                care_harm=weights.get("care", 0.5),
+                fairness_proportionality=weights.get("fairness", 0.5),
+                loyalty_betrayal=weights.get("loyalty", 0.5),
+                authority_subversion=weights.get("authority", 0.5),
+                sanctity_degradation=weights.get("sanctity", 0.5),
+                liberty_oppression=weights.get("liberty", 0.5),
+                deontological_vs_utilitarian=data.get("deontological_vs_utilitarian", 0.5),
+                reasoning=data.get("reasoning"),
+                constraints=data.get("constraints", [])
+            )
+        return cls(**data)
+
+    @classmethod
+    def from_numpy(cls, arr: np.ndarray, reasoning: str = None, constraints: List[str] = None, source_layer: str = None, layer_id: str = None):
+        mv = cls(
             care_harm=float(arr[0]),
             fairness_proportionality=float(arr[1]),
             loyalty_betrayal=float(arr[2]),
@@ -41,6 +79,41 @@ class MoralVector(BaseModel):
             deontological_vs_utilitarian=float(arr[6]),
             reasoning=reasoning,
             constraints=constraints or []
+        )
+        if source_layer or layer_id:
+            mv.metadata = {"source_layer": source_layer, "layer_id": layer_id}
+        return mv
+
+    @staticmethod
+    def weighted_average(vectors: List['MoralVector'], weights: List[float]) -> 'MoralVector':
+        if not vectors:
+            return MoralVector()
+        
+        arrs = [v.to_numpy() for v in vectors]
+        weighted_sum = np.zeros(7)
+        total_weight = sum(weights)
+        
+        if total_weight == 0:
+            return vectors[0]
+
+        for arr, w in zip(arrs, weights):
+            weighted_sum += arr * w
+            
+        avg_arr = weighted_sum / total_weight
+        
+        # Merge constraints and reasoning
+        all_constraints = []
+        reasoning_parts = []
+        for v, w in zip(vectors, weights):
+            if v.constraints:
+                all_constraints.extend(v.constraints)
+            if v.reasoning:
+                reasoning_parts.append(f"[{w:.2f}] {v.reasoning}")
+                
+        return MoralVector.from_numpy(
+            avg_arr, 
+            reasoning=" | ".join(reasoning_parts),
+            constraints=list(set(all_constraints))
         )
 
 class MoralTrace(BaseModel):

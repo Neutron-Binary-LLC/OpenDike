@@ -26,19 +26,26 @@ def example_usage():
         
         print(f"Loading local Gemma model: {model_id}...")
         
-        # Note: Gemma is a gated model. Ensure you have access and are authenticated.
-        pipe = pipeline(
-            "text-generation", 
-            model=model_id, 
-            device_map="auto",
-            token=hf_token
-        )
-        
-        def gemma_llm(prompt):
-            outputs = pipe(prompt, max_new_tokens=256, do_sample=True, temperature=0.7)
-            return outputs[0]["generated_text"]
-        
-        llm_func = gemma_llm
+        try:
+            # Note: Gemma is a gated model. Ensure you have access and are authenticated.
+            pipe = pipeline(
+                "text-generation", 
+                model=model_id, 
+                device_map="auto",
+                token=hf_token
+            )
+            
+            def gemma_llm(prompt):
+                outputs = pipe(prompt, max_new_tokens=256, do_sample=True, temperature=0.7)
+                return outputs[0]["generated_text"]
+            
+            llm_func = gemma_llm
+        except Exception as e:
+            print(f"Error loading Gemma: {e}")
+            print("Falling back to Mock LLM.")
+            def mock_llm(prompt):
+                return f"Mock Response to: {prompt[:100]}..."
+            llm_func = mock_llm
     else:
         def mock_llm(prompt):
             return f"Mock Response to: {prompt[:100]}..."

@@ -1,7 +1,6 @@
 from src.opendike.models import MoralVector, MoralTrace
 from src.opendike.memory import MemPalace
-from src.opendike.experts import MoralExpert, MoralGatingNetwork
-from src.opendike.deducer import LayeredMoralityDeducer
+from src.opendike.experts import MoralExpert, MoralGatingNetwork, LayeredMoralityDeducer
 from src.opendike.wrapper import MoralityWrapper
 from src.opendike.learning import ContinualLearner
 from src.opendike.config import config

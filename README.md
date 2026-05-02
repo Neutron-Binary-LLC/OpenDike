@@ -24,10 +24,10 @@ OpenDike is a lightweight morality wrapper and gateway designed to sit in front 
 ```mermaid
 graph TD
     User([User Query]) --> Wrapper[Morality Wrapper]
-    Wrapper --> Deducer[Layered Morality Deducer - MoE Controller]
+    Wrapper --> Deducer[Layered Morality Deducer - Unified Controller]
     
     subgraph MoE [Mixture of Experts]
-        Gating[Gating Network / Router]
+        Gating[Intent-Aware Gating Network]
         E1[Country Expert]
         E2[Community Expert]
         E3[Organization Expert]
@@ -36,23 +36,20 @@ graph TD
     end
     
     Deducer --> Gating
-    Gating --> E1
-    Gating --> E2
-    Gating --> E3
-    Gating --> E4
-    Gating --> E5
+    Gating --> |Weights| E1 & E2 & E3 & E4 & E5
     
     E1 & E2 & E3 & E4 & E5 <--> MemPalace[(MemPalace Memory)]
     
-    E1 & E2 & E3 & E4 & E5 --> Vector[Composite Moral Vector]
-    Vector --> Conflict[Conflict Detection]
+    E1 & E2 & E3 & E4 & E5 --> |Weighted Fusion| Vector[Composite Moral Vector]
+    Vector --> Conflict[Dimension-wise Conflict Detection]
     Conflict --> FinalVector[Final Steering Prefix]
     
     FinalVector --> LLM[Downstream LLM]
     LLM --> Response([Aligned Response])
     
     Response -.-> Learner[Continual Learner]
-    Learner -.-> MemPalace
+    Learner -.-> |Store Trace| MemPalace
+    Response -.-> |Adapter Feedback| Deducer
 ```
 
 ### Config-Context Association
@@ -86,23 +83,23 @@ graph LR
 sequenceDiagram
     participant U as User
     participant W as Morality Wrapper
-    participant D as Deducer (MoE Controller)
-    participant G as Gating Network
-    participant E as Experts
+    participant D as Deducer (Unified Controller)
+    participant G as Intent Gating
+    participant E as Experts (MoE)
     participant M as MemPalace
     participant L as LLM
 
     U->>W: Send Query
-    W->>D: Request Moral Steering
-    D->>G: Route Query
-    G-->>D: Expert Weights
-    D->>E: Parallel Inference
-    E->>M: Retrieve Traces
-    M-->>E: Contextual Traces
+    W->>D: deduce_moral_vector(query, context)
+    D->>G: Detect Intent & Route
+    G-->>D: Layer Weights
+    D->>E: Parallel Inference (get_vector)
+    E->>M: Retrieve Traces (Palace Walk)
+    M-->>E: Relevant Moral Traces
     E-->>D: Expert Moral Vectors
-    D->>D: weighted Fusion & Conflict Detection
-    D-->>W: Composite Steering Vector
-    W->>L: Query + Moral Prefix
+    D->>D: Weighted Fusion & Conflict Detection
+    D-->>W: Composite Steering Vector + Reasoning
+    W->>L: Query + Steering Prefix
     L-->>W: Aligned Response
     W-->>U: Final Response
 ```
@@ -112,11 +109,11 @@ sequenceDiagram
 - `src/opendike/`: Core logic and models.
     - `models.py`: Pydantic models for `MoralVector` and `MoralTrace`.
     - `memory.py`: `MemPalace` hierarchical memory implementation.
-    - `experts.py`: MoE Experts and Gating Network.
-    - `deducer.py`: `LayeredMoralityDeducer` controller.
+    - `experts.py`: Unified `LayeredMoralityDeducer` controller, MoE Experts, and Gating Network.
     - `wrapper.py`: `MoralityWrapper` gateway.
     - `learning.py`: `ContinualLearner` loop.
     - `core.py`: Example entry point.
+    - `interactive_run.py`: Interactive CLI for testing and feedback.
     - `train.py`: Training stubs for future improvements.
 - `data/`: Local storage for `MemPalace` traces and profiles.
 - `tests/`: Unit and integration tests.
