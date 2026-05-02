@@ -9,6 +9,21 @@ experts:
     demographic: 0.15
     community: 0.15
     country: 0.1
+  intent_gating:
+    mode: "layered"  # Options: "layered", "expert"
+    intents:
+      legal:
+        keywords: ["law", "legal", "country", "government", "official", "rules"]
+        boost: 0.15
+        target_layers: ["country"]
+      organizational:
+        keywords: ["company", "work", "manager", "employee", "corporate", "office"]
+        boost: 0.15
+        target_layers: ["organization"]
+      cultural:
+        keywords: ["tradition", "elder", "community", "culture", "religious"]
+        boost: 0.15
+        target_layers: ["community"]
 
 deducer:
   base_profiles:

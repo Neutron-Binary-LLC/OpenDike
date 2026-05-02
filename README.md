@@ -36,7 +36,7 @@ graph TD
     end
     
     Deducer --> Gating
-    Gating --> |Weights| E1 & E2 & E3 & E4 & E5
+    Gating --> |"Weights (Layered/Expert Mode)"| E1 & E2 & E3 & E4 & E5
     
     E1 & E2 & E3 & E4 & E5 <--> MemPalace[(MemPalace Memory)]
     
@@ -152,6 +152,27 @@ python src/opendike/train.py
    python src/opendike/interactive_run.py
    ```
 
+## Configuration
+
+OpenDike is highly configurable via `config.yaml`. Key sections include:
+
+### Intent Gating
+Configure how the system detects query intent and routes to experts.
+```yaml
+experts:
+  intent_gating:
+    mode: "layered"  # Options: "layered", "expert"
+    intents:
+      legal:
+        keywords: ["law", "legal", "country", "government", "official", "rules"]
+        boost: 0.15
+        target_layers: ["country"]
+      organizational:
+        keywords: ["company", "work", "manager", "employee", "corporate", "office"]
+        boost: 0.15
+        target_layers: ["organization"]
+```
+
 ### Local Testing with Gemma
 
 OpenDike supports local testing using Google's Gemma model via the Hugging Face `transformers` library.
@@ -213,6 +234,9 @@ docker-compose up training
 ## Core Features
 
 - **Mixture of Experts (MoE) Architecture**: Decouples layer logic into specialized experts coordinated by a gating network.
+- **Intent-Aware Gating**: Dynamically adjusts expert weights based on query intent (e.g., boosting the Country layer for legal questions). Supports two modes:
+    - **Layered Mode**: Additive boosts to relevant layers.
+    - **Expert Mode**: Aggressive redistribution of weights towards the primary intent.
 - **Hierarchical Reasoning**: Composes moral priorities from Country, Community, Organization, Demographic, and Personal layers.
 - **MemPalace Memory**: Spatial/hierarchical storage for morally salient interaction traces.
 - **Continual Learning**: Updates experts (specifically Personal) based on user feedback and moral episodes.

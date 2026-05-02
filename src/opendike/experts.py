@@ -83,36 +83,62 @@ class MoralGatingNetwork:
                 "country": 0.10
             }
         )
+        self.intent_config = config.get("experts.intent_gating", {
+            "mode": "layered",
+            "intents": {}
+        })
 
     def route(self, query: str, active_layers: List[str],
               user_context: Optional[Dict] = None) -> Dict[str, float]:
         """Compute routing weights with hierarchy bias and query intent detection."""
         weights = {}
-        
-        # Heuristic: detect intent
         query_lower = query.lower()
-        is_legal_or_national = any(word in query_lower for word in ["law", "legal", "country", "government", "official"])
-        is_organizational = any(word in query_lower for word in ["company", "work", "manager", "employee", "corporate", "office"])
-        is_community_bound = any(word in query_lower for word in ["tradition", "elder", "community", "culture", "religious"])
+        mode = self.intent_config.get("mode", "layered")
+        intents = self.intent_config.get("intents", {})
 
+        # 1. Base weights and specificity bonus
         for layer in active_layers:
             base_w = self.default_weights.get(layer, 0.1)
-            
             # Hierarchy bonus: more specific layers get slight boost
             specificity_bonus = 0.08 if layer == "personal" else 0.0
-            
-            # Intent-based dynamic boost
-            intent_boost = 0.0
-            if layer == "country" and is_legal_or_national:
-                intent_boost = 0.15
-            elif layer == "organization" and is_organizational:
-                intent_boost = 0.15
-            elif layer == "community" and is_community_bound:
-                intent_boost = 0.15
-            
-            weights[layer] = base_w + specificity_bonus + intent_boost
+            weights[layer] = base_w + specificity_bonus
 
-        # Normalize
+        # 2. Intent-based dynamic boost
+        if mode == "layered":
+            # Current behavior: boost specific layers if intent matches
+            for intent_name, data in intents.items():
+                keywords = data.get("keywords", [])
+                if any(word in query_lower for word in keywords):
+                    boost = data.get("boost", 0.15)
+                    target_layers = data.get("target_layers", [])
+                    for layer in target_layers:
+                        if layer in weights:
+                            weights[layer] += boost
+        
+        elif mode == "expert":
+            # Aggressive behavior: redistribute weights towards the primary intent
+            primary_intent = None
+            max_hits = 0
+            for intent_name, data in intents.items():
+                hits = sum(1 for word in data.get("keywords", []) if word in query_lower)
+                if hits > max_hits:
+                    max_hits = hits
+                    primary_intent = data
+            
+            if primary_intent:
+                boost = primary_intent.get("boost", 0.3)
+                target_layers = primary_intent.get("target_layers", [])
+                for layer in target_layers:
+                    if layer in weights:
+                        # In expert mode, we boost target layers and potentially suppress others
+                        weights[layer] += boost
+                
+                # Suppress non-target, non-personal layers slightly to sharpen focus
+                for layer in weights:
+                    if layer not in target_layers and layer != "personal":
+                        weights[layer] = max(0.01, weights[layer] - (boost / 2))
+
+        # 3. Normalize
         total = sum(weights.values())
         if total > 0:
             weights = {k: round(v / total, 4) for k, v in weights.items()}
