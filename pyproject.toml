@@ -1,0 +1,27 @@
+[project]
+name = "opendike"
+version = "0.1.0"
+description = "A Moral & Alignment Wrapper for Conscious Digital Entities"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "sentence-transformers",
+    "torch",
+    "pydantic",
+    "numpy",
+    "chromadb",
+    "faiss-cpu",
+    "python-dotenv",
+    "pyyaml",
+]
+
+[project.scripts]
+opendike-run = "opendike.interactive_run:run_interactive"
+opendike-train = "opendike.train:train_simulation"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opendike"]

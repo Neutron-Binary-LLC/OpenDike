@@ -3,8 +3,8 @@ import numpy as np
 import time
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
-from src.opendike.models import MoralTrace
-from src.opendike.config import config
+from opendike.models import MoralTrace
+from opendike.config import config
 
 class MemPalace:
     """

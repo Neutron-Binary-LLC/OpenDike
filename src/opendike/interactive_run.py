@@ -1,7 +1,7 @@
 import os
 import sys
-from src.opendike.config import config
-from src.opendike import (
+from opendike.config import config
+from opendike import (
     MemPalace, 
     LayeredMoralityDeducer, 
     MoralityWrapper, 

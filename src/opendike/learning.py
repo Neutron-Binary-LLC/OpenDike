@@ -1,7 +1,7 @@
 from typing import Dict, Any
 import numpy as np
-from src.opendike.memory import MemPalace
-from src.opendike.config import config
+from opendike.memory import MemPalace
+from opendike.config import config
 
 class ContinualLearner:
     def __init__(self, mem_palace: MemPalace):

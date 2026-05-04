@@ -126,7 +126,7 @@ OpenDike supports a continuous training flow to keep moral experts aligned with 
 
 To run the training simulation:
 ```bash
-python src/opendike/train.py
+uv run opendike-train
 ```
 - `data/`: Local storage for `MemPalace` traces and profiles.
 - `tests/`: Unit and integration tests.
@@ -135,22 +135,42 @@ python src/opendike/train.py
 
 ## Setup & Usage
 
-### Local Installation
+### 🛠️ Using `uv` (Recommended)
 
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Run the core example:
-   ```bash
-   export PYTHONPATH=$PYTHONPATH:$(pwd)
-   python src/opendike/core.py
-   ```
-3. Run the interactive test:
-   ```bash
-   export PYTHONPATH=$PYTHONPATH:$(pwd)
-   python src/opendike/interactive_run.py
-   ```
+OpenDike is managed with [uv](https://github.com/astral-sh/uv). This is the fastest way to install and run the project.
+
+1.  **Install `uv`** (if you haven't):
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+2.  **Run the interactive CLI**:
+    ```bash
+    uv run opendike-run
+    ```
+
+3.  **Run the training simulation**:
+    ```bash
+    uv run opendike-train
+    ```
+
+4.  **Install the project** (optional):
+    ```bash
+    uv pip install -e .
+    ```
+
+### 🐍 Traditional Installation
+
+1.  Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  Run the core example:
+    ```bash
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+    python src/opendike/core.py
+    ```
 
 ## Configuration
 

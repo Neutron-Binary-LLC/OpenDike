@@ -5,9 +5,9 @@ import json
 from datetime import datetime
 import logging
 
-from src.opendike.models import MoralVector
-from src.opendike.memory import MemPalace
-from src.opendike.config import config
+from opendike.models import MoralVector
+from opendike.memory import MemPalace
+from opendike.config import config
 
 logger = logging.getLogger(__name__)
 

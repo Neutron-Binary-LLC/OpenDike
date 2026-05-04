@@ -1,8 +1,8 @@
 from typing import Dict, List, Any
 import time
-from src.opendike.models import MoralVector
-from src.opendike.experts import LayeredMoralityDeducer
-from src.opendike.config import config
+from opendike.models import MoralVector
+from opendike.experts import LayeredMoralityDeducer
+from opendike.config import config
 
 class MoralityWrapper:
     """

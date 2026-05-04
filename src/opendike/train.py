@@ -4,8 +4,8 @@ import numpy as np
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import logging
-from src.opendike import MoralVector, MoralExpert, MemPalace, LayeredMoralityDeducer
-from src.opendike.config import config
+from opendike import MoralVector, MoralExpert, MemPalace, LayeredMoralityDeducer
+from opendike.config import config
 
 logger = logging.getLogger(__name__)
 
