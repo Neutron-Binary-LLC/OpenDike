@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, Optional
 import numpy as np
 import time
+import os
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
 from opendike.models import MoralTrace
@@ -24,6 +25,39 @@ class MemPalace:
             "demographic": {},
             "personal": {}
         }
+        self.storage_path = config.get("memory.storage_path", "data/memory_storage.json")
+        self.load_storage()
+
+    def save_storage(self):
+        """Persist storage to disk."""
+        os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
+        serializable_storage = {}
+        for l_type, l_ids in self.storage.items():
+            serializable_storage[l_type] = {}
+            for l_id, traces in l_ids.items():
+                serializable_storage[l_type][l_id] = [t.dict() for t in traces]
+        
+        import json
+        with open(self.storage_path, 'w') as f:
+            json.dump(serializable_storage, f, indent=2)
+
+    def load_storage(self):
+        """Load storage from disk."""
+        if not os.path.exists(self.storage_path):
+            return
+
+        import json
+        try:
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
+            
+            for l_type, l_ids in data.items():
+                if l_type not in self.storage:
+                    self.storage[l_type] = {}
+                for l_id, traces_data in l_ids.items():
+                    self.storage[l_type][l_id] = [MoralTrace(**t) for t in traces_data]
+        except Exception as e:
+            print(f"Error loading memory storage: {e}")
 
     def store_trace(self, layer_type: str, layer_id: str, trace: Dict[str, Any]):
         """Store a trace, ensuring it has content and embedding."""

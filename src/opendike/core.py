@@ -14,10 +14,41 @@ def example_usage():
     wrapper = MoralityWrapper(deducer)
     learner = ContinualLearner(palace)
     
-    # 2. LLM setup (Gemma or Mock)
+    # 2. LLM setup (Gemma, LM Studio, or Mock)
     use_gemma = config.get("wrapper.local_testing.use_gemma", False)
+    use_lm_studio = config.get("wrapper.local_testing.use_lm_studio", False)
     
-    if use_gemma:
+    if use_lm_studio:
+        import requests
+        lm_url = config.get("wrapper.local_testing.lm_studio_url", "http://127.0.0.1:1234/v1")
+        print(f"Connecting to LM Studio at {lm_url}...")
+        
+        def lm_studio_llm(prompt):
+            try:
+                response = requests.post(
+                    f"{lm_url}/chat/completions",
+                    json={
+                        "messages": [{"role": "user", "content": prompt}],
+                        "temperature": 0.7,
+                        "max_tokens": 1024
+                    },
+                    timeout=60
+                )
+                response.raise_for_status()
+                resp_json = response.json()
+                choice = resp_json["choices"][0]
+                content = choice["message"].get("content")
+                
+                # If content is empty but reasoning_content exists, use that or a combination
+                if not content and "reasoning_content" in choice["message"]:
+                    content = choice["message"]["reasoning_content"]
+                    
+                return content or "No response content received from LM Studio."
+            except Exception as e:
+                return f"Error calling LM Studio: {e}"
+        
+        llm_func = lm_studio_llm
+    elif use_gemma:
         from transformers import pipeline
         import torch
         

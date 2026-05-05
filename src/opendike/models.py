@@ -63,9 +63,33 @@ class MoralVector(BaseModel):
                 liberty_oppression=weights.get("liberty", 0.5),
                 deontological_vs_utilitarian=data.get("deontological_vs_utilitarian", 0.5),
                 reasoning=data.get("reasoning"),
-                constraints=data.get("constraints", [])
+                constraints=data.get("constraints", []),
+                metadata=data.get("metadata", {})
             )
-        return cls(**data)
+        
+        # If 'adapter' is in data, move it to metadata if it's not already handled
+        # But wait, MoralExpert expects adapter separately. 
+        # Actually, let's just make sure metadata is preserved.
+        
+        # Extract fields for direct instantiation
+        fields = {
+            "care_harm": data.get("care_harm", 0.5),
+            "fairness_proportionality": data.get("fairness_proportionality", 0.5),
+            "loyalty_betrayal": data.get("loyalty_betrayal", 0.5),
+            "authority_subversion": data.get("authority_subversion", 0.5),
+            "sanctity_degradation": data.get("sanctity_degradation", 0.5),
+            "liberty_oppression": data.get("liberty_oppression", 0.5),
+            "deontological_vs_utilitarian": data.get("deontological_vs_utilitarian", 0.5),
+            "reasoning": data.get("reasoning"),
+            "constraints": data.get("constraints", []),
+            "metadata": data.get("metadata", {})
+        }
+        
+        # If there are other keys in data (like 'adapter'), and we want to preserve them:
+        if "adapter" in data and "adapter" not in fields["metadata"]:
+            fields["metadata"]["adapter"] = data["adapter"]
+
+        return cls(**fields)
 
     @classmethod
     def from_numpy(cls, arr: np.ndarray, reasoning: str = None, constraints: List[str] = None, source_layer: str = None, layer_id: str = None):

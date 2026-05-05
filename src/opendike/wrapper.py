@@ -42,7 +42,7 @@ class MoralityWrapper:
         start_time = time.time()
         
         # 1. Deduce moral vector
-        deduction = self.deducer.deduce(query, context)
+        deduction = self.deducer.deduce_moral_vector(query, context)
         
         # 2. Generate prefix
         prefix = self._generate_system_prefix(deduction)

@@ -199,11 +199,16 @@ class LayeredMoralityDeducer:
     def register_expert(self, layer_type: str, layer_id: str, base_profile: MoralVector):
         """Register a new moral expert."""
         key = f"{layer_type}:{layer_id}"
+        
+        # Check if the profile has an adapter in its metadata (from config)
+        adapter = base_profile.metadata.get("adapter", {})
+        
         self.experts[key] = MoralExpert(
             layer_type=layer_type,
             layer_id=layer_id,
             base_profile=base_profile,
-            mem_palace=self.mem_palace
+            mem_palace=self.mem_palace,
+            adapter=adapter
         )
 
     def deduce_moral_vector(self,
