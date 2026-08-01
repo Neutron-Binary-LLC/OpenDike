@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run python*)",
+      "Bash(uv pip install*)",
+      "Bash(python3 -m py_compile*)",
+      "Bash(mkdir -p /Users/lakhwinder/air/OpenDike/reports)",
+      "Bash(date*)"
+    ]
+  }
+}
